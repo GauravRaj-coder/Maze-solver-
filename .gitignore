@@ -1,0 +1,8 @@
+bin/
+.gemini/
+*.class
+.tempmediaStorage/
+.system_generated/
+walkthrough.md
+implementation_plan.md
+task.md

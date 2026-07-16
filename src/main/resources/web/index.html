@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maze Pathfinding Simulator | Java Backtracking & Recursion</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for beautiful icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="glass-bg-glow"></div>
+    <div class="app-container">
+        <!-- HEADER -->
+        <header>
+            <div class="logo-area">
+                <i class="fa-solid fa-network-wired logo-icon"></i>
+                <div class="logo-text">
+                    <h1>AmazeSolve</h1>
+                    <span>Java Backtracking & Pathfinding Simulator</span>
+                </div>
+            </div>
+            <div class="controls-panel glass">
+                <div class="control-group">
+                    <label for="algo-select"><i class="fa-solid fa-gears"></i> Algorithm</label>
+                    <select id="algo-select">
+                        <option value="backtracking" selected>Backtracking DFS (Recursive)</option>
+                        <option value="bfs">Breadth-First Search (BFS)</option>
+                        <option value="dijkstra">Dijkstra's Algorithm</option>
+                        <option value="astar">A* Search (Manhattan Heuristic)</option>
+                        <option value="greedy">Greedy Best-First Search</option>
+                        <option value="bibfs">Bidirectional BFS</option>
+                        <option value="biastar">Bidirectional A*</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="pattern-select"><i class="fa-solid fa-shapes"></i> Maze / Puzzle Type</label>
+                    <select id="pattern-select">
+                        <option value="dfs" selected>Recursive Backtracker (DFS Hard)</option>
+                        <option value="kruskals">Kruskal's Algorithm (Hard)</option>
+                        <option value="prims">Prim's Algorithm (Medium)</option>
+                        <option value="recursive-division">Recursive Division (Hard)</option>
+                        <option value="binary-tree">Binary Tree (Easy Bias)</option>
+                        <option value="spiral">Spiral Labyrinth (Hard)</option>
+                        <option value="double-spiral">Double Spiral Labyrinth (Hard)</option>
+                        <option value="horizontal-blinds">Horizontal Blinds (Serpentine Hard)</option>
+                        <option value="diagonal-trap">Diagonal Grid Trap (Hard)</option>
+                        <option value="chamber-rooms">Chamber Rooms (Medium)</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="size-select"><i class="fa-solid fa-table-cells"></i> Grid Size</label>
+                    <select id="size-select">
+                        <option value="11">11 x 11 (Small)</option>
+                        <option value="21" selected>21 x 21 (Standard)</option>
+                        <option value="31">31 x 31 (Detailed)</option>
+                        <option value="41">41 x 41 (Hard & Long)</option>
+                        <option value="51">51 x 51 (Expert & Long)</option>
+                    </select>
+                </div>
+                <div class="control-group loop-group">
+                    <label for="loop-slider"><i class="fa-solid fa-arrows-spin"></i> Loops / Crossovers: <span id="loop-val">0%</span></label>
+                    <input type="range" id="loop-slider" min="0" max="30" value="0" step="5">
+                </div>
+                <div class="control-group speed-group">
+                    <label for="speed-slider"><i class="fa-solid fa-gauge-high"></i> Speed: <span id="speed-val">100ms</span></label>
+                    <input type="range" id="speed-slider" min="2" max="500" value="50" step="5">
+                </div>
+                <div class="button-row">
+                    <button id="generate-btn" class="btn btn-secondary" title="Generate maze/puzzle using Java"><i class="fa-solid fa-wand-magic-sparkles"></i> Generate Maze</button>
+                    <button id="solve-btn" class="btn btn-primary" title="Execute pathfinding algorithm"><i class="fa-solid fa-play"></i> Solve Maze</button>
+                    <button id="clear-path-btn" class="btn btn-outline" title="Clear path markings, keep walls"><i class="fa-solid fa-eraser"></i> Clear Path</button>
+                    <button id="clear-grid-btn" class="btn btn-danger" title="Reset whole grid to empty"><i class="fa-solid fa-trash-can"></i> Clear Grid</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN LAYOUT -->
+        <main class="main-content">
+            <!-- SIMULATOR CANVAS/GRID -->
+            <section class="simulator-section glass">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-vector-square"></i> Maze Grid Canvas</h2>
+                    <span class="interactive-tip"><i class="fa-solid fa-circle-info"></i> Select tool below to paint walls, reposition Start/End nodes, or place Fake Target traps on the grid.</span>
+                </div>
+                
+                <div class="brush-toolbar">
+                    <span class="tool-label"><i class="fa-solid fa-paintbrush"></i> Click Tool Mode:</span>
+                    <button class="tool-btn active" id="tool-wall" data-tool="wall"><i class="fa-solid fa-square-full" style="color: #64748b; font-size: 0.75rem;"></i> Wall Painter</button>
+                    <button class="tool-btn" id="tool-start" data-tool="start"><i class="fa-solid fa-location-dot" style="color: var(--clr-start); font-size: 0.85rem;"></i> Place Start</button>
+                    <button class="tool-btn" id="tool-end" data-tool="end"><i class="fa-solid fa-crosshairs" style="color: var(--clr-end); font-size: 0.85rem;"></i> Place End</button>
+                    <button class="tool-btn" id="tool-fake" data-tool="fake"><i class="fa-solid fa-circle-xmark" style="color: #ff6200; font-size: 0.85rem;"></i> Place Fake Target</button>
+                </div>
+
+                <div id="grid-container" class="grid-container">
+                    <!-- Javascript will generate cells dynamically here -->
+                </div>
+                <!-- LEGEND -->
+                <div class="legend">
+                    <div class="legend-item"><span class="legend-box start-box"></span>Start Node</div>
+                    <div class="legend-item"><span class="legend-box end-box"></span>End Node</div>
+                    <div class="legend-item"><span class="legend-box fake-end-box"></span>Fake Target (Trap)</div>
+                    <div class="legend-item"><span class="legend-box wall-box"></span>Wall</div>
+                    <div class="legend-item"><span class="legend-box path-box"></span>Selected Path</div>
+                    <div class="legend-item"><span class="legend-box path-overlay-box"></span>Alternative Paths</div>
+                    <div class="legend-item"><span class="legend-box visited-box"></span>Visited (Forward)</div>
+                    <div class="legend-item"><span class="legend-box visited-reverse-box"></span>Visited (Reverse)</div>
+                </div>
+            </section>
+
+            <!-- STATS AND LOG SIDEBAR -->
+            <aside class="sidebar-section">
+                <!-- STATS PANEL -->
+                <div class="stats-panel glass">
+                    <h3><i class="fa-solid fa-chart-simple"></i> Execution Statistics</h3>
+                    <div class="status-indicator">
+                        <span class="status-label">Status:</span>
+                        <span id="status-text" class="status-badge ready">READY</span>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <span class="stat-num" id="stat-visited">0</span>
+                            <span class="stat-lbl">Cells Visited</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-num" id="stat-solutions">0</span>
+                            <span class="stat-lbl">Total Solutions</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-num" id="stat-path-len">0</span>
+                            <span class="stat-lbl">Path Length</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-num" id="stat-time">0 ms</span>
+                            <span class="stat-lbl">Java Time</span>
+                        </div>
+                    </div>
+                    
+                    <!-- MULTIPLE PATH SELECTION CONTROLS -->
+                    <div class="multi-path-controls" id="multi-path-container" style="display: none; margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); width: 100%; display: flex; flex-direction: column; gap: 12px;">
+                        <div class="control-group" style="width: 100%;">
+                            <label for="path-select" style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;"><i class="fa-solid fa-route"></i> Highlight Solution</label>
+                            <select id="path-select" style="padding: 8px 12px; font-size: 0.85rem; width: 100%; margin-top: 4px;">
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                        <label class="overlay-checkbox-label" style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #cbd5e1; cursor: pointer; user-select: none; margin-top: 4px;">
+                            <input type="checkbox" id="overlay-paths-check" style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--clr-cyan);">
+                            Show All Solution Paths Overlay
+                        </label>
+                    </div>
+                </div>
+
+                <!-- ALGO EXPLANATION -->
+                <div class="explain-panel glass">
+                    <h3><i class="fa-solid fa-book-open"></i> Algorithm Insight</h3>
+                    <div id="algo-explain-content" class="algo-explain-content">
+                        <!-- Dynamic text content based on algorithm -->
+                    </div>
+                </div>
+
+                <!-- RECURSION LOG -->
+                <div class="log-panel glass">
+                    <div class="log-header">
+                        <h3><i class="fa-solid fa-terminal"></i> Java Execution Log</h3>
+                        <button id="clear-log-btn" class="btn-icon" title="Clear log screen"><i class="fa-solid fa-ban"></i></button>
+                    </div>
+                    <div id="log-output" class="log-output">
+                        <div class="log-line system-msg">Initialize Maze Solver Website... Ready.</div>
+                        <div class="log-line system-msg">Select "Solve Maze" to start the simulation.</div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+        
+        <footer>
+            <p>Made with <i class="fa-solid fa-heart text-danger"></i> & Java Backtracking Recursion</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
